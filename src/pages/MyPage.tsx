@@ -3,6 +3,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 type Profile = {
   id: string;
@@ -21,6 +30,8 @@ const MyPage = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [processingPayment, setProcessingPayment] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -68,6 +79,11 @@ const MyPage = () => {
   };
 
   const handlePlanChange = async (newPlan: 'free' | 'premium') => {
+    if (newPlan === 'premium') {
+      setShowPaymentModal(true);
+      return;
+    }
+
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
@@ -81,7 +97,7 @@ const MyPage = () => {
               user_id: user.id,
               plan: newPlan,
               current_period_start: new Date().toISOString(),
-              current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 days from now
+              current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
             }
           ])
           .select()
@@ -116,6 +132,65 @@ const MyPage = () => {
         description: "プラン変更に失敗しました",
         variant: "destructive",
       });
+    }
+  };
+
+  const handleMockPayment = async () => {
+    setProcessingPayment(true);
+    // 決済処理をシミュレート
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      if (!subscription) {
+        // Create new subscription
+        const { data, error } = await supabase
+          .from('subscriptions')
+          .insert([
+            { 
+              user_id: user.id,
+              plan: 'premium',
+              current_period_start: new Date().toISOString(),
+              current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+            }
+          ])
+          .select()
+          .single();
+
+        if (error) throw error;
+        setSubscription(data);
+      } else {
+        // Update existing subscription
+        const { data, error } = await supabase
+          .from('subscriptions')
+          .update({ 
+            plan: 'premium',
+            current_period_start: new Date().toISOString(),
+            current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+          })
+          .eq('id', subscription.id)
+          .select()
+          .single();
+
+        if (error) throw error;
+        setSubscription(data);
+      }
+
+      toast({
+        title: "決済完了",
+        description: "プレミアムプランへの登録が完了しました",
+      });
+      setShowPaymentModal(false);
+    } catch (error) {
+      toast({
+        title: "エラーが発生しました",
+        description: "決済処理に失敗しました",
+        variant: "destructive",
+      });
+    } finally {
+      setProcessingPayment(false);
     }
   };
 
@@ -182,6 +257,49 @@ const MyPage = () => {
           </div>
         </CardContent>
       </Card>
+
+      <Dialog open={showPaymentModal} onOpenChange={setShowPaymentModal}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>プレミアムプランへのアップグレード</DialogTitle>
+            <DialogDescription>
+              クレジットカード情報を入力して、プレミアムプランにアップグレードしてください。
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="card-number">カード番号</Label>
+              <Input
+                id="card-number"
+                placeholder="4242 4242 4242 4242"
+                className="font-mono"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="expiry">有効期限</Label>
+                <Input
+                  id="expiry"
+                  placeholder="MM/YY"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="cvc">セキュリティコード</Label>
+                <Input
+                  id="cvc"
+                  placeholder="123"
+                />
+              </div>
+            </div>
+            <Button
+              onClick={handleMockPayment}
+              disabled={processingPayment}
+            >
+              {processingPayment ? "処理中..." : "¥15,000/月で登録する"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
