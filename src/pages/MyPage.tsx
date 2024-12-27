@@ -10,6 +10,7 @@ type SubscriptionPlan = Database["public"]["Enums"]["subscription_plan"];
 type Profile = {
   id: string;
   username: string | null;
+  full_name: string | null;
   created_at: string | null;
 };
 
