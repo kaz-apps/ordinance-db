@@ -1,5 +1,5 @@
 import React from 'react';
-import { TableCell } from "@/components/ui/table";
+import { TableCell, TableRow } from "@/components/ui/table";
 import { Ordinance } from '../../types/ordinance';
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -17,7 +17,7 @@ export const OrdinanceTableRow: React.FC<OrdinanceTableRowProps> = ({
   applicabilityStatus,
 }) => {
   return (
-    <>
+    <TableRow>
       <TableCell>
         <div className="flex items-center space-x-2">
           <Checkbox
@@ -48,6 +48,6 @@ export const OrdinanceTableRow: React.FC<OrdinanceTableRowProps> = ({
       <TableCell>{ordinance.requirements}</TableCell>
       <TableCell>{ordinance.buildingType}</TableCell>
       <TableCell>{ordinance.buildingSize.floors}</TableCell>
-    </>
+    </TableRow>
   );
 };
