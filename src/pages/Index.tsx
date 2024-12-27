@@ -3,7 +3,7 @@ import OrdinanceTable from '../components/OrdinanceTable';
 import { Button } from '@/components/ui/button';
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from 'react-router-dom';
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -11,20 +11,20 @@ const Index = () => {
 
   const handleLogout = async () => {
     try {
+      // Remove global scope to prevent session not found errors
       const { error } = await supabase.auth.signOut();
-      if (error) {
+      if (error && error.message !== "Session not found") {
         console.error('Logout error:', error);
         toast({
           variant: "destructive",
           title: "ログアウトエラー",
           description: "ログアウトに失敗しました。再度お試しください。",
         });
-      } else {
-        navigate('/login');
       }
     } catch (error) {
       console.error('Logout error:', error);
-      // Force navigation to login page even if there's an error
+    } finally {
+      // Always navigate to login page
       navigate('/login');
     }
   };
