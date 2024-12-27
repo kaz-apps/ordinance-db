@@ -59,17 +59,14 @@ const OrdinanceTable = ({ ordinances }: OrdinanceTableProps) => {
     useSensor(KeyboardSensor)
   );
 
-  // 建築用途の一覧を取得
   const buildingTypes = useMemo(() => {
     return Array.from(new Set(ordinances.map(ord => ord.buildingType)));
   }, [ordinances]);
 
-  // 都道府県の一覧を取得
   const prefectures = useMemo(() => {
     return Array.from(new Set(ordinances.map(ord => ord.prefecture)));
   }, [ordinances]);
 
-  // 選択された都道府県に基づいて市区町村の一覧を取得
   const cities = useMemo(() => {
     if (!selectedPrefecture) return [];
     return Array.from(
@@ -86,7 +83,6 @@ const OrdinanceTable = ({ ordinances }: OrdinanceTableProps) => {
     setSelectedCity(''); // Reset city selection when prefecture changes
   };
 
-  // フィルタリングされた条例一覧
   const filteredOrdinances = useMemo(() => {
     return items.filter(ord => {
       if (selectedPrefecture && selectedPrefecture !== '_all' && ord.prefecture !== selectedPrefecture) return false;
@@ -98,7 +94,6 @@ const OrdinanceTable = ({ ordinances }: OrdinanceTableProps) => {
     });
   }, [items, selectedPrefecture, selectedCity, selectedBuildingType, minFloors, maxFloors]);
 
-  // ソート関数
   const handleSort = (key: SortConfig['key']) => {
     if (!key) return;
     
@@ -127,7 +122,6 @@ const OrdinanceTable = ({ ordinances }: OrdinanceTableProps) => {
     setItems(sorted);
   };
 
-  // ドラッグ&ドロップによる並び替え
   const handleDragEnd = (event) => {
     const { active, over } = event;
     
@@ -162,7 +156,7 @@ const OrdinanceTable = ({ ordinances }: OrdinanceTableProps) => {
 
   const exportToCSV = () => {
     try {
-      const headers = ['都道府県', '市区町村', 'カテゴリ', 'サブカテゴリ', 'タイトル', '説明', '要件', '建築用途', '階数', '高さ', '延床面積'];
+      const headers = ['都道府県', '市区町村', 'カテゴリ', 'サブカテゴリ', 'タイトル', '概要', '要件', '建築用途', '階数', '高さ', '延床面積'];
       
       const csvData = filteredOrdinances.map(ordinance => [
         ordinance.prefecture,
@@ -302,7 +296,9 @@ const OrdinanceTable = ({ ordinances }: OrdinanceTableProps) => {
                   <TableHead className="w-[200px]" onClick={() => handleSort('title')}>
                     タイトル <ArrowUpDown className="ml-2 h-4 w-4 inline" />
                   </TableHead>
-                  <TableHead className="w-[250px]">説明</TableHead>
+                  <TableHead className="w-[250px]" onClick={() => handleSort('description')}>
+                    概要 <ArrowUpDown className="ml-2 h-4 w-4 inline" />
+                  </TableHead>
                   <TableHead>要件</TableHead>
                   <TableHead className="w-[150px]" onClick={() => handleSort('buildingType')}>
                     建築用途 <ArrowUpDown className="ml-2 h-4 w-4 inline" />
