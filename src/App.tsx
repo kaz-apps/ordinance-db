@@ -52,8 +52,23 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-// Convert App to function component
 function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setIsAuthenticated(!!session);
+    };
+    checkAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsAuthenticated(!!session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
@@ -65,9 +80,10 @@ function App() {
             <Route
               path="/"
               element={
-                <ProtectedRoute>
+                <>
+                  {isAuthenticated && <MainNav />}
                   <Index />
-                </ProtectedRoute>
+                </>
               }
             />
             <Route
