@@ -43,6 +43,7 @@ export const OrdinanceList: React.FC<OrdinanceListProps> = ({
   });
 
   const isPremiumUser = subscription?.plan === 'premium';
+  console.log('Is Premium User:', isPremiumUser); // デバッグ用
 
   // グループごとに条例をまとめる
   const groupedOrdinances = ordinances.reduce((acc, ordinance) => {
@@ -78,6 +79,13 @@ export const OrdinanceList: React.FC<OrdinanceListProps> = ({
                     const shouldBlurRow = isPremiumUser ? false : // プレミアムユーザー: 常にぼかしなし
                       !isAuthenticated ? (groupIndex > 0 || index > 0) : // 未認証: 最初の行以外をぼかす
                       (ordinance.category !== '調査'); // 無料ユーザー: 調査カテゴリ以外をぼかす
+
+                    console.log('Row blur status:', {
+                      isPremiumUser,
+                      isAuthenticated,
+                      category: ordinance.category,
+                      shouldBlurRow
+                    }); // デバッグ用
 
                     return (
                       <OrdinanceTableRow

@@ -46,8 +46,8 @@ export const OrdinanceTableRow: React.FC<OrdinanceTableRowProps> = ({
   }
 
   return (
-    <TableRow className="relative">
-      <TableCell className={cn(isBlurred && "blur-[2px] pointer-events-none")}>
+    <TableRow className={cn("relative", isBlurred && "blur-[2px]")}>
+      <TableCell>
         <div className="flex items-center space-x-2">
           <Checkbox
             id={`not-applicable-${ordinance.id}`}
@@ -68,17 +68,17 @@ export const OrdinanceTableRow: React.FC<OrdinanceTableRowProps> = ({
           </Label>
         </div>
       </TableCell>
-      <TableCell className={cn(isBlurred && "blur-[2px]")}>{ordinance.prefecture}</TableCell>
-      <TableCell className={cn(isBlurred && "blur-[2px]")}>{ordinance.city}</TableCell>
-      <TableCell className={cn(isBlurred && "blur-[2px]")}>{ordinance.category}</TableCell>
-      <TableCell className={cn(isBlurred && "blur-[2px]")}>{ordinance.subCategory}</TableCell>
-      <TableCell className={cn(isBlurred && "blur-[2px]")}>{ordinance.title}</TableCell>
-      <TableCell className={cn(isBlurred && "blur-[2px]")}>{ordinance.description}</TableCell>
-      <TableCell className={cn(isBlurred && "blur-[2px]")}>{ordinance.requirements}</TableCell>
-      <TableCell className={cn(isBlurred && "blur-[2px]")}>{ordinance.buildingType}</TableCell>
-      <TableCell className={cn(isBlurred && "blur-[2px]")}>{ordinance.buildingSize.floors}</TableCell>
+      <TableCell>{ordinance.prefecture}</TableCell>
+      <TableCell>{ordinance.city}</TableCell>
+      <TableCell>{ordinance.category}</TableCell>
+      <TableCell>{ordinance.subCategory}</TableCell>
+      <TableCell>{ordinance.title}</TableCell>
+      <TableCell>{ordinance.description}</TableCell>
+      <TableCell>{ordinance.requirements}</TableCell>
+      <TableCell>{ordinance.buildingType}</TableCell>
+      <TableCell>{ordinance.buildingSize.floors}</TableCell>
       {isBlurred && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/30 z-10">
+        <div className="absolute inset-0 flex items-center justify-center bg-black/30">
           <Lock className="h-5 w-5 text-white" />
         </div>
       )}
