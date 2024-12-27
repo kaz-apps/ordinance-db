@@ -3,13 +3,30 @@ import OrdinanceTable from '../components/OrdinanceTable';
 import { Button } from '@/components/ui/button';
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from 'react-router-dom';
+import { useToast } from "@/components/ui/use-toast";
 
 const Index = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate('/login');
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('Logout error:', error);
+        toast({
+          variant: "destructive",
+          title: "ログアウトエラー",
+          description: "ログアウトに失敗しました。再度お試しください。",
+        });
+      } else {
+        navigate('/login');
+      }
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Force navigation to login page even if there's an error
+      navigate('/login');
+    }
   };
 
   return (
