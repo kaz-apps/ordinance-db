@@ -2,23 +2,13 @@ import React, { useState, useMemo } from 'react';
 import {
   Table,
   TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
   TableRow,
 } from "@/components/ui/table";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { Download, ArrowUpDown } from "lucide-react";
+import { Download } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { Ordinance } from '../types/ordinance';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   DndContext,
   closestCenter,
@@ -34,6 +24,9 @@ import {
   arrayMove,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { OrdinanceFilters } from './ordinance/OrdinanceFilters';
+import { OrdinanceTableHeader } from './ordinance/OrdinanceTableHeader';
+import { OrdinanceTableRow } from './ordinance/OrdinanceTableRow';
 
 interface OrdinanceTableProps {
   ordinances: Ordinance[];
@@ -53,6 +46,7 @@ const OrdinanceTable = ({ ordinances }: OrdinanceTableProps) => {
   const [maxFloors, setMaxFloors] = useState<string>('');
   const [sortConfig, setSortConfig] = useState<SortConfig>(null);
   const [items, setItems] = useState(ordinances);
+  const [applicabilityStatus, setApplicabilityStatus] = useState<Record<string, 'applicable' | 'not-applicable' | null>>({});
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -80,7 +74,7 @@ const OrdinanceTable = ({ ordinances }: OrdinanceTableProps) => {
 
   const handlePrefectureChange = (value: string) => {
     setSelectedPrefecture(value);
-    setSelectedCity(''); // Reset city selection when prefecture changes
+    setSelectedCity('');
   };
 
   const filteredOrdinances = useMemo(() => {
@@ -133,6 +127,13 @@ const OrdinanceTable = ({ ordinances }: OrdinanceTableProps) => {
     }
   };
 
+  const handleApplicabilityChange = (id: string, status: 'applicable' | 'not-applicable' | null) => {
+    setApplicabilityStatus(prev => ({
+      ...prev,
+      [id]: status
+    }));
+  };
+
   const SortableRow = ({ ordinance, children }) => {
     const {
       attributes,
@@ -156,7 +157,7 @@ const OrdinanceTable = ({ ordinances }: OrdinanceTableProps) => {
 
   const exportToCSV = () => {
     try {
-      const headers = ['都道府県', '市区町村', 'カテゴリ', 'サブカテゴリ', 'タイトル', '概要', '要件', '建築用途', '階数', '高さ', '延床面積'];
+      const headers = ['都道府県', '市区町村', 'カテゴリ', 'サブカテゴリ', 'タイトル', '概要', '要件', '建築用途', '階数', '高さ', '延床面積', '適用状態'];
       
       const csvData = filteredOrdinances.map(ordinance => [
         ordinance.prefecture,
@@ -169,7 +170,8 @@ const OrdinanceTable = ({ ordinances }: OrdinanceTableProps) => {
         ordinance.buildingType,
         ordinance.buildingSize.floors,
         ordinance.buildingSize.height,
-        ordinance.buildingSize.totalArea
+        ordinance.buildingSize.totalArea,
+        applicabilityStatus[ordinance.id] || '未選択'
       ]);
       
       const csvContent = [
@@ -203,69 +205,23 @@ const OrdinanceTable = ({ ordinances }: OrdinanceTableProps) => {
 
   return (
     <div className="w-full space-y-4">
-      <div className="flex flex-wrap gap-4">
-        <Select value={selectedPrefecture} onValueChange={handlePrefectureChange}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="都道府県を選択" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="_all">すべての都道府県</SelectItem>
-            {prefectures.map(prefecture => (
-              <SelectItem key={prefecture} value={prefecture}>
-                {prefecture}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <Select value={selectedCity} onValueChange={setSelectedCity} disabled={!selectedPrefecture}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="市区町村を選択" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="_all">すべての市区町村</SelectItem>
-            {cities.map(city => (
-              <SelectItem key={city} value={city}>
-                {city}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <Select value={selectedBuildingType} onValueChange={setSelectedBuildingType}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="建築用途を選択" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="_all">すべての用途</SelectItem>
-            {buildingTypes.map(type => (
-              <SelectItem key={type} value={type}>
-                {type}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <div className="flex items-center gap-2">
-          <input
-            type="number"
-            placeholder="最小階数"
-            value={minFloors}
-            onChange={(e) => setMinFloors(e.target.value)}
-            className="w-24 px-3 py-2 border rounded"
-          />
-          <span>～</span>
-          <input
-            type="number"
-            placeholder="最大階数"
-            value={maxFloors}
-            onChange={(e) => setMaxFloors(e.target.value)}
-            className="w-24 px-3 py-2 border rounded"
-          />
-          <span>階</span>
-        </div>
-
-        <Button onClick={exportToCSV} variant="outline" className="ml-auto">
+      <div className="flex justify-between items-center">
+        <OrdinanceFilters
+          selectedPrefecture={selectedPrefecture}
+          selectedCity={selectedCity}
+          selectedBuildingType={selectedBuildingType}
+          minFloors={minFloors}
+          maxFloors={maxFloors}
+          prefectures={prefectures}
+          cities={cities}
+          buildingTypes={buildingTypes}
+          onPrefectureChange={handlePrefectureChange}
+          onCityChange={setSelectedCity}
+          onBuildingTypeChange={setSelectedBuildingType}
+          onMinFloorsChange={setMinFloors}
+          onMaxFloorsChange={setMaxFloors}
+        />
+        <Button onClick={exportToCSV} variant="outline">
           <Download className="mr-2 h-4 w-4" />
           CSVエクスポート
         </Button>
@@ -279,48 +235,16 @@ const OrdinanceTable = ({ ordinances }: OrdinanceTableProps) => {
             onDragEnd={handleDragEnd}
           >
             <Table>
-              <TableHeader className="sticky top-0 bg-background">
-                <TableRow>
-                  <TableHead className="w-[150px]" onClick={() => handleSort('prefecture')}>
-                    都道府県 <ArrowUpDown className="ml-2 h-4 w-4 inline" />
-                  </TableHead>
-                  <TableHead className="w-[150px]" onClick={() => handleSort('city')}>
-                    市区町村 <ArrowUpDown className="ml-2 h-4 w-4 inline" />
-                  </TableHead>
-                  <TableHead className="w-[150px]" onClick={() => handleSort('category')}>
-                    カテゴリ <ArrowUpDown className="ml-2 h-4 w-4 inline" />
-                  </TableHead>
-                  <TableHead className="w-[150px]" onClick={() => handleSort('subCategory')}>
-                    サブカテゴリ <ArrowUpDown className="ml-2 h-4 w-4 inline" />
-                  </TableHead>
-                  <TableHead className="w-[200px]" onClick={() => handleSort('title')}>
-                    タイトル <ArrowUpDown className="ml-2 h-4 w-4 inline" />
-                  </TableHead>
-                  <TableHead className="w-[250px]" onClick={() => handleSort('description')}>
-                    概要 <ArrowUpDown className="ml-2 h-4 w-4 inline" />
-                  </TableHead>
-                  <TableHead>要件</TableHead>
-                  <TableHead className="w-[150px]" onClick={() => handleSort('buildingType')}>
-                    建築用途 <ArrowUpDown className="ml-2 h-4 w-4 inline" />
-                  </TableHead>
-                  <TableHead className="w-[100px]" onClick={() => handleSort('buildingSize.floors')}>
-                    階数 <ArrowUpDown className="ml-2 h-4 w-4 inline" />
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
+              <OrdinanceTableHeader onSort={handleSort} />
               <TableBody>
                 <SortableContext items={filteredOrdinances} strategy={verticalListSortingStrategy}>
                   {filteredOrdinances.map((ordinance) => (
                     <SortableRow key={ordinance.id} ordinance={ordinance}>
-                      <TableCell>{ordinance.prefecture}</TableCell>
-                      <TableCell>{ordinance.city}</TableCell>
-                      <TableCell>{ordinance.category}</TableCell>
-                      <TableCell>{ordinance.subCategory}</TableCell>
-                      <TableCell>{ordinance.title}</TableCell>
-                      <TableCell>{ordinance.description}</TableCell>
-                      <TableCell>{ordinance.requirements}</TableCell>
-                      <TableCell>{ordinance.buildingType}</TableCell>
-                      <TableCell>{ordinance.buildingSize.floors}</TableCell>
+                      <OrdinanceTableRow
+                        ordinance={ordinance}
+                        onApplicabilityChange={handleApplicabilityChange}
+                        applicabilityStatus={applicabilityStatus}
+                      />
                     </SortableRow>
                   ))}
                 </SortableContext>
