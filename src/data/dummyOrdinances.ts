@@ -9,7 +9,13 @@ export const dummyOrdinances: Ordinance[] = [
     subCategory: '構造安全性',
     title: '耐震基準',
     description: '建築物の耐震性に関する基準',
-    requirements: '震度6強までの地震に耐えうる構造であること'
+    requirements: '震度6強までの地震に耐えうる構造であること',
+    buildingType: '事務所',
+    buildingSize: {
+      floors: 20,
+      height: 80,
+      totalArea: 10000
+    }
   },
   {
     id: '2',
@@ -19,7 +25,13 @@ export const dummyOrdinances: Ordinance[] = [
     subCategory: '構造安全性',
     title: '風圧力基準',
     description: '建築物の耐風性に関する基準',
-    requirements: '風速50m/sまでの風圧に耐えうる構造であること'
+    requirements: '風速50m/sまでの風圧に耐えうる構造であること',
+    buildingType: '共同住宅',
+    buildingSize: {
+      floors: 15,
+      height: 45,
+      totalArea: 8000
+    }
   },
   {
     id: '3',
@@ -29,7 +41,13 @@ export const dummyOrdinances: Ordinance[] = [
     subCategory: '避難設備',
     title: '非常口設置基準',
     description: '非常口の設置に関する基準',
-    requirements: '床面積200㎡ごとに1か所以上の非常口を設置すること'
+    requirements: '床面積200㎡ごとに1か所以上の非常口を設置すること',
+    buildingType: '事務所',
+    buildingSize: {
+      floors: 10,
+      height: 30,
+      totalArea: 5000
+    }
   },
   {
     id: '4',
@@ -39,7 +57,13 @@ export const dummyOrdinances: Ordinance[] = [
     subCategory: '騒音対策',
     title: '防音基準',
     description: '建築物の防音に関する基準',
-    requirements: '外部騒音を30dB以上低減する構造であること'
+    requirements: '外部騒音を30dB以上低減する構造であること',
+    buildingType: '共同住宅',
+    buildingSize: {
+      floors: 8,
+      height: 25,
+      totalArea: 3000
+    }
   },
   {
     id: '5',
@@ -49,7 +73,13 @@ export const dummyOrdinances: Ordinance[] = [
     subCategory: '緑化対策',
     title: '緑化率基準',
     description: '敷地内の緑化に関する基準',
-    requirements: '敷地面積の20%以上を緑化すること'
+    requirements: '敷地面積の20%以上を緑化すること',
+    buildingType: '事務所',
+    buildingSize: {
+      floors: 5,
+      height: 15,
+      totalArea: 2000
+    }
   },
   {
     id: '6',
@@ -59,7 +89,13 @@ export const dummyOrdinances: Ordinance[] = [
     subCategory: '高さ制限',
     title: '建物高さ制限',
     description: '建築物の高さに関する制限',
-    requirements: '住居地域における建物高さは45m以下とすること'
+    requirements: '住居地域における建物高さは45m以下とすること',
+    buildingType: '共同住宅',
+    buildingSize: {
+      floors: 12,
+      height: 40,
+      totalArea: 6000
+    }
   },
   {
     id: '7',
@@ -69,7 +105,13 @@ export const dummyOrdinances: Ordinance[] = [
     subCategory: '浸水対策',
     title: '浸水対策基準',
     description: '建築物の浸水対策に関する基準',
-    requirements: '地下階の設置には防水板の設置が必須'
+    requirements: '地下階の設置には防水板の設置が必須',
+    buildingType: '事務所',
+    buildingSize: {
+      floors: 6,
+      height: 20,
+      totalArea: 4000
+    }
   },
   {
     id: '8',
@@ -79,7 +121,13 @@ export const dummyOrdinances: Ordinance[] = [
     subCategory: 'デザイン',
     title: '外観デザイン基準',
     description: '建築物の外観デザインに関する基準',
-    requirements: '歴史的街並みとの調和を考慮したデザインとすること'
+    requirements: '歴史的街並みとの調和を考慮したデザインとすること',
+    buildingType: '共同住宅',
+    buildingSize: {
+      floors: 9,
+      height: 30,
+      totalArea: 4500
+    }
   },
   {
     id: '9',
@@ -89,7 +137,13 @@ export const dummyOrdinances: Ordinance[] = [
     subCategory: '省エネ',
     title: '省エネ基準',
     description: '建築物の省エネルギー対策に関する基準',
-    requirements: 'ZEB Ready以上の省エネ性能を確保すること'
+    requirements: 'ZEB Ready以上の省エネ性能を確保すること',
+    buildingType: '事務所',
+    buildingSize: {
+      floors: 7,
+      height: 22,
+      totalArea: 3500
+    }
   },
   {
     id: '10',
@@ -99,7 +153,13 @@ export const dummyOrdinances: Ordinance[] = [
     subCategory: '消火設備',
     title: 'スプリンクラー設置基準',
     description: 'スプリンクラー設備の設置に関する基準',
-    requirements: '3階以上の建築物には自動スプリンクラーを設置すること'
+    requirements: '3階以上の建築物には自動スプリンクラーを設置すること',
+    buildingType: '共同住宅',
+    buildingSize: {
+      floors: 4,
+      height: 12,
+      totalArea: 2000
+    }
   },
   {
     id: '11',
@@ -109,7 +169,13 @@ export const dummyOrdinances: Ordinance[] = [
     subCategory: '日照',
     title: '日影規制',
     description: '建築物による日影の規制基準',
-    requirements: '隣地境界線から5m以内の範囲で4時間以上の日影を生じさせないこと'
+    requirements: '隣地境界線から5m以内の範囲で4時間以上の日影を生じさせないこと',
+    buildingType: '事務所',
+    buildingSize: {
+      floors: 3,
+      height: 10,
+      totalArea: 1500
+    }
   },
   {
     id: '12',
@@ -119,7 +185,13 @@ export const dummyOrdinances: Ordinance[] = [
     subCategory: '基礎工事',
     title: '地盤調査基準',
     description: '建築物の地盤調査に関する基準',
-    requirements: '建築面積300㎡以上の建物には地盤調査が必須'
+    requirements: '建築面積300㎡以上の建物には地盤調査が必須',
+    buildingType: '共同住宅',
+    buildingSize: {
+      floors: 2,
+      height: 6,
+      totalArea: 800
+    }
   },
   {
     id: '13',
@@ -129,7 +201,13 @@ export const dummyOrdinances: Ordinance[] = [
     subCategory: '津波対策',
     title: '津波対策基準',
     description: '建築物の津波対策に関する基準',
-    requirements: '海抜3m以下の地域では1階を駐車場等の非居住用途とすること'
+    requirements: '海抜3m以下の地域では1階を駐車場等の非居住用途とすること',
+    buildingType: '事務所',
+    buildingSize: {
+      floors: 5,
+      height: 15,
+      totalArea: 2000
+    }
   },
   {
     id: '14',
@@ -139,7 +217,13 @@ export const dummyOrdinances: Ordinance[] = [
     subCategory: '耐火',
     title: '耐火構造基準',
     description: '建築物の耐火構造に関する基準',
-    requirements: '地上4階以上の建築物は耐火建築物とすること'
+    requirements: '地上4階以上の建築物は耐火建築物とすること',
+    buildingType: '共同住宅',
+    buildingSize: {
+      floors: 4,
+      height: 12,
+      totalArea: 1800
+    }
   },
   {
     id: '15',
@@ -149,6 +233,12 @@ export const dummyOrdinances: Ordinance[] = [
     subCategory: '排水',
     title: '雨水排水基準',
     description: '建築物の雨水排水に関する基準',
-    requirements: '敷地面積1,000㎡以上の開発では雨水貯留施設の設置が必要'
+    requirements: '敷地面積1,000㎡以上の開発では雨水貯留施設の設置が必要',
+    buildingType: '事務所',
+    buildingSize: {
+      floors: 3,
+      height: 9,
+      totalArea: 1200
+    }
   }
 ];

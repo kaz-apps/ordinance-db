@@ -7,4 +7,10 @@ export interface Ordinance {
   title: string;
   description: string;
   requirements: string;
+  buildingType: string; // 建築用途
+  buildingSize: {
+    floors: number;
+    height: number;
+    totalArea: number;
+  };
 }

@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/table";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { Download } from "lucide-react";
+import { Download, ArrowUpDown } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { Ordinance } from '../types/ordinance';
 import {
@@ -19,15 +19,37 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { DragDropContext, Droppable, Draggable } from '@dnd-kit/core';
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 interface OrdinanceTableProps {
   ordinances: Ordinance[];
 }
 
+type SortConfig = {
+  key: keyof Ordinance | 'buildingSize.floors' | 'buildingSize.height' | 'buildingSize.totalArea';
+  direction: 'asc' | 'desc';
+} | null;
+
 const OrdinanceTable = ({ ordinances }: OrdinanceTableProps) => {
   const { toast } = useToast();
   const [selectedPrefecture, setSelectedPrefecture] = useState<string>('');
   const [selectedCity, setSelectedCity] = useState<string>('');
+  const [selectedBuildingType, setSelectedBuildingType] = useState<string>('');
+  const [minFloors, setMinFloors] = useState<string>('');
+  const [maxFloors, setMaxFloors] = useState<string>('');
+  const [sortConfig, setSortConfig] = useState<SortConfig>(null);
+  const [items, setItems] = useState(ordinances);
+
+  // 建築用途の一覧を取得
+  const buildingTypes = useMemo(() => {
+    return Array.from(new Set(ordinances.map(ord => ord.buildingType)));
+  }, [ordinances]);
 
   // 都道府県の一覧を取得
   const prefectures = useMemo(() => {
@@ -48,22 +70,64 @@ const OrdinanceTable = ({ ordinances }: OrdinanceTableProps) => {
 
   // フィルタリングされた条例一覧
   const filteredOrdinances = useMemo(() => {
-    return ordinances.filter(ord => {
-      if (selectedPrefecture && ord.prefecture !== selectedPrefecture) return false;
-      if (selectedCity && ord.city !== selectedCity) return false;
+    return items.filter(ord => {
+      if (selectedPrefecture && selectedPrefecture !== '_all' && ord.prefecture !== selectedPrefecture) return false;
+      if (selectedCity && selectedCity !== '_all' && ord.city !== selectedCity) return false;
+      if (selectedBuildingType && selectedBuildingType !== '_all' && ord.buildingType !== selectedBuildingType) return false;
+      if (minFloors && ord.buildingSize.floors < parseInt(minFloors)) return false;
+      if (maxFloors && ord.buildingSize.floors > parseInt(maxFloors)) return false;
       return true;
     });
-  }, [ordinances, selectedPrefecture, selectedCity]);
+  }, [items, selectedPrefecture, selectedCity, selectedBuildingType, minFloors, maxFloors]);
 
-  // 都道府県が変更された時の処理
-  const handlePrefectureChange = (value: string) => {
-    setSelectedPrefecture(value);
-    setSelectedCity(''); // 都道府県が変更されたら市区町村の選択をリセット
+  // ソート関数
+  const handleSort = (key: SortConfig['key']) => {
+    if (!key) return;
+    
+    const direction = 
+      sortConfig?.key === key && sortConfig.direction === 'asc'
+        ? 'desc'
+        : 'asc';
+    
+    setSortConfig({ key, direction });
+    
+    const sorted = [...items].sort((a, b) => {
+      let aValue = key.includes('.') 
+        ? key.split('.').reduce((obj, key) => obj[key], a)
+        : a[key];
+      let bValue = key.includes('.')
+        ? key.split('.').reduce((obj, key) => obj[key], b)
+        : b[key];
+      
+      if (direction === 'asc') {
+        return aValue > bValue ? 1 : -1;
+      } else {
+        return aValue < bValue ? 1 : -1;
+      }
+    });
+    
+    setItems(sorted);
+  };
+
+  // ドラッグ&ドロップによる並び替え
+  const handleDragEnd = (event) => {
+    const { active, over } = event;
+    
+    if (active.id !== over.id) {
+      const oldIndex = items.findIndex(item => item.id === active.id);
+      const newIndex = items.findIndex(item => item.id === over.id);
+      
+      const newItems = [...items];
+      const [removed] = newItems.splice(oldIndex, 1);
+      newItems.splice(newIndex, 0, removed);
+      
+      setItems(newItems);
+    }
   };
 
   const exportToCSV = () => {
     try {
-      const headers = ['都道府県', '市区町村', 'カテゴリ', 'サブカテゴリ', 'タイトル', '説明', '要件'];
+      const headers = ['都道府県', '市区町村', 'カテゴリ', 'サブカテゴリ', 'タイトル', '説明', '要件', '建築用途', '階数', '高さ', '延床面積'];
       
       const csvData = filteredOrdinances.map(ordinance => [
         ordinance.prefecture,
@@ -72,7 +136,11 @@ const OrdinanceTable = ({ ordinances }: OrdinanceTableProps) => {
         ordinance.subCategory || '',
         ordinance.title,
         ordinance.description,
-        ordinance.requirements
+        ordinance.requirements,
+        ordinance.buildingType,
+        ordinance.buildingSize.floors,
+        ordinance.buildingSize.height,
+        ordinance.buildingSize.totalArea
       ]);
       
       const csvContent = [
@@ -106,38 +174,69 @@ const OrdinanceTable = ({ ordinances }: OrdinanceTableProps) => {
 
   return (
     <div className="w-full space-y-4">
-      <div className="flex justify-between items-center">
-        <div className="flex gap-4">
-          <Select value={selectedPrefecture} onValueChange={handlePrefectureChange}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="都道府県を選択" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="_all">すべての都道府県</SelectItem>
-              {prefectures.map(prefecture => (
-                <SelectItem key={prefecture} value={prefecture}>
-                  {prefecture}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+      <div className="flex flex-wrap gap-4">
+        <Select value={selectedPrefecture} onValueChange={handlePrefectureChange}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="都道府県を選択" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="_all">すべての都道府県</SelectItem>
+            {prefectures.map(prefecture => (
+              <SelectItem key={prefecture} value={prefecture}>
+                {prefecture}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
-          <Select value={selectedCity} onValueChange={setSelectedCity} disabled={!selectedPrefecture}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="市区町村を選択" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="_all">すべての市区町村</SelectItem>
-              {cities.map(city => (
-                <SelectItem key={city} value={city}>
-                  {city}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <Select value={selectedCity} onValueChange={setSelectedCity} disabled={!selectedPrefecture}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="市区町村を選択" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="_all">すべての市区町村</SelectItem>
+            {cities.map(city => (
+              <SelectItem key={city} value={city}>
+                {city}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select value={selectedBuildingType} onValueChange={setSelectedBuildingType}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="建築用途を選択" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="_all">すべての用途</SelectItem>
+            {buildingTypes.map(type => (
+              <SelectItem key={type} value={type}>
+                {type}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <div className="flex items-center gap-2">
+          <input
+            type="number"
+            placeholder="最小階数"
+            value={minFloors}
+            onChange={(e) => setMinFloors(e.target.value)}
+            className="w-24 px-3 py-2 border rounded"
+          />
+          <span>～</span>
+          <input
+            type="number"
+            placeholder="最大階数"
+            value={maxFloors}
+            onChange={(e) => setMaxFloors(e.target.value)}
+            className="w-24 px-3 py-2 border rounded"
+          />
+          <span>階</span>
         </div>
 
-        <Button onClick={exportToCSV} variant="outline">
+        <Button onClick={exportToCSV} variant="outline" className="ml-auto">
           <Download className="mr-2 h-4 w-4" />
           CSVエクスポート
         </Button>
@@ -145,32 +244,65 @@ const OrdinanceTable = ({ ordinances }: OrdinanceTableProps) => {
 
       <div className="border rounded-lg">
         <ScrollArea className="h-[600px]">
-          <Table>
-            <TableHeader className="sticky top-0 bg-background">
-              <TableRow>
-                <TableHead className="w-[150px]">都道府県</TableHead>
-                <TableHead className="w-[150px]">市区町村</TableHead>
-                <TableHead className="w-[150px]">カテゴリ</TableHead>
-                <TableHead className="w-[150px]">サブカテゴリ</TableHead>
-                <TableHead className="w-[200px]">タイトル</TableHead>
-                <TableHead className="w-[250px]">説明</TableHead>
-                <TableHead>要件</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredOrdinances.map((ordinance) => (
-                <TableRow key={ordinance.id}>
-                  <TableCell>{ordinance.prefecture}</TableCell>
-                  <TableCell>{ordinance.city}</TableCell>
-                  <TableCell>{ordinance.category}</TableCell>
-                  <TableCell>{ordinance.subCategory}</TableCell>
-                  <TableCell>{ordinance.title}</TableCell>
-                  <TableCell>{ordinance.description}</TableCell>
-                  <TableCell>{ordinance.requirements}</TableCell>
+          <DragDropContext onDragEnd={handleDragEnd}>
+            <Table>
+              <TableHeader className="sticky top-0 bg-background">
+                <TableRow>
+                  <TableHead className="w-[150px]" onClick={() => handleSort('prefecture')}>
+                    都道府県 <ArrowUpDown className="ml-2 h-4 w-4 inline" />
+                  </TableHead>
+                  <TableHead className="w-[150px]" onClick={() => handleSort('city')}>
+                    市区町村 <ArrowUpDown className="ml-2 h-4 w-4 inline" />
+                  </TableHead>
+                  <TableHead className="w-[150px]" onClick={() => handleSort('category')}>
+                    カテゴリ <ArrowUpDown className="ml-2 h-4 w-4 inline" />
+                  </TableHead>
+                  <TableHead className="w-[150px]" onClick={() => handleSort('subCategory')}>
+                    サブカテゴリ <ArrowUpDown className="ml-2 h-4 w-4 inline" />
+                  </TableHead>
+                  <TableHead className="w-[200px]" onClick={() => handleSort('title')}>
+                    タイトル <ArrowUpDown className="ml-2 h-4 w-4 inline" />
+                  </TableHead>
+                  <TableHead className="w-[250px]">説明</TableHead>
+                  <TableHead>要件</TableHead>
+                  <TableHead className="w-[150px]" onClick={() => handleSort('buildingType')}>
+                    建築用途 <ArrowUpDown className="ml-2 h-4 w-4 inline" />
+                  </TableHead>
+                  <TableHead className="w-[100px]" onClick={() => handleSort('buildingSize.floors')}>
+                    階数 <ArrowUpDown className="ml-2 h-4 w-4 inline" />
+                  </TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <Droppable droppableId="table">
+                {(provided) => (
+                  <TableBody {...provided.droppableProps} ref={provided.innerRef}>
+                    {filteredOrdinances.map((ordinance, index) => (
+                      <Draggable key={ordinance.id} draggableId={ordinance.id} index={index}>
+                        {(provided) => (
+                          <TableRow
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            {...provided.dragHandleProps}
+                          >
+                            <TableCell>{ordinance.prefecture}</TableCell>
+                            <TableCell>{ordinance.city}</TableCell>
+                            <TableCell>{ordinance.category}</TableCell>
+                            <TableCell>{ordinance.subCategory}</TableCell>
+                            <TableCell>{ordinance.title}</TableCell>
+                            <TableCell>{ordinance.description}</TableCell>
+                            <TableCell>{ordinance.requirements}</TableCell>
+                            <TableCell>{ordinance.buildingType}</TableCell>
+                            <TableCell>{ordinance.buildingSize.floors}</TableCell>
+                          </TableRow>
+                        )}
+                      </Draggable>
+                    ))}
+                    {provided.placeholder}
+                  </TableBody>
+                )}
+              </Droppable>
+            </Table>
+          </DragDropContext>
         </ScrollArea>
       </div>
     </div>
