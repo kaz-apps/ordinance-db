@@ -33,8 +33,6 @@ const Index = () => {
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
-      // Clear any remaining session state and navigate
-      await supabase.auth.clearSession();
       navigate('/login');
     }
   };
