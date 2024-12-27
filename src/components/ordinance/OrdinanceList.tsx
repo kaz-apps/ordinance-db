@@ -75,9 +75,9 @@ export const OrdinanceList: React.FC<OrdinanceListProps> = ({
                   />
                   {groupOrdinances.map((ordinance, index) => {
                     // ぼかし処理の条件を更新
-                    const shouldBlurRow = !isAuthenticated ? 
-                      (groupIndex > 0 || index > 0) : // 未認証: 最初の行以外をぼかす
-                      (!isPremiumUser && ordinance.category !== '調査'); // プレミアムユーザー: ぼかしなし、それ以外: 調査カテゴリ以外をぼかす
+                    const shouldBlurRow = isPremiumUser ? false : // プレミアムユーザー: 常にぼかしなし
+                      !isAuthenticated ? (groupIndex > 0 || index > 0) : // 未認証: 最初の行以外をぼかす
+                      (ordinance.category !== '調査'); // 無料ユーザー: 調査カテゴリ以外をぼかす
 
                     return (
                       <OrdinanceTableRow
