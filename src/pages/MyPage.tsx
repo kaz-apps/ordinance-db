@@ -6,6 +6,7 @@ import { ProfileCard } from "@/components/profile/ProfileCard";
 import { SubscriptionCard } from "@/components/subscription/SubscriptionCard";
 import { useNavigate } from "react-router-dom";
 import { MainNav } from "@/components/navigation/MainNav";
+import { useQueryClient } from "@tanstack/react-query";
 
 type SubscriptionPlan = Database["public"]["Enums"]["subscription_plan"];
 
@@ -29,6 +30,7 @@ const MyPage = () => {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     checkUser();
@@ -121,6 +123,9 @@ const MyPage = () => {
         if (error) throw error;
         setSubscription(data);
       }
+
+      // Invalidate the subscription query to force a refresh
+      queryClient.invalidateQueries({ queryKey: ['subscription'] });
 
       toast({
         title: "プラン変更完了",
