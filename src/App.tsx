@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import Login from "./pages/Login";
 import MyPage from "./pages/MyPage";
 import PaymentPage from "./pages/PaymentPage";
+import { MainNav } from "./components/navigation/MainNav";
 
 const queryClient = new QueryClient();
 
@@ -33,7 +34,14 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     return null;
   }
 
-  return isAuthenticated ? <>{children}</> : <Navigate to="/login" />;
+  return isAuthenticated ? (
+    <>
+      <MainNav />
+      {children}
+    </>
+  ) : (
+    <Navigate to="/login" />
+  );
 };
 
 const App = () => (
