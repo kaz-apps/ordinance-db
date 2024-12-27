@@ -11,8 +11,17 @@ const Index = () => {
 
   const handleLogout = async () => {
     try {
-      // Remove global scope to prevent session not found errors
-      const { error } = await supabase.auth.signOut();
+      const session = await supabase.auth.getSession();
+      if (!session.data.session) {
+        // If no session exists, just navigate to login
+        navigate('/login');
+        return;
+      }
+
+      const { error } = await supabase.auth.signOut({
+        scope: 'local' // Use local scope instead of global
+      });
+      
       if (error && error.message !== "Session not found") {
         console.error('Logout error:', error);
         toast({
@@ -24,7 +33,8 @@ const Index = () => {
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
-      // Always navigate to login page
+      // Clear any remaining session state and navigate
+      await supabase.auth.clearSession();
       navigate('/login');
     }
   };
