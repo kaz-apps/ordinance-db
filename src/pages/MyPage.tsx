@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 type Profile = {
   id: string;
@@ -41,7 +41,7 @@ const MyPage = () => {
         .from('profiles')
         .select('*')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
 
       if (profileError) throw profileError;
       setProfile(profileData);
@@ -51,11 +51,9 @@ const MyPage = () => {
         .from('subscriptions')
         .select('*')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
-      if (subscriptionError && subscriptionError.code !== 'PGRST116') {
-        throw subscriptionError;
-      }
+      if (subscriptionError) throw subscriptionError;
       setSubscription(subscriptionData);
 
     } catch (error) {
