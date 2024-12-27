@@ -4,13 +4,14 @@ import { Link, useNavigate } from "react-router-dom";
 import { Home, User, UserPlus, LogIn, LogOut } from "lucide-react";
 import { useEffect, useState } from 'react';
 import { supabase } from "@/integrations/supabase/client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/use-toast";
 
 export const MainNav = () => {
   const [session, setSession] = useState(null);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   // サブスクリプション情報を取得
   const { data: subscription } = useQuery({
@@ -45,13 +46,24 @@ export const MainNav = () => {
 
   const handleLogout = async () => {
     try {
-      await supabase.auth.signOut();
-      navigate('/login');
+      // キャッシュをクリア
+      queryClient.clear();
+      
+      // ログアウト処理
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+
+      // セッションをクリア
+      setSession(null);
+      
+      // ログアウト後の処理
+      navigate('/');
       toast({
         title: "ログアウトしました",
         description: "ご利用ありがとうございました",
       });
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Logout error:', error);
       toast({
         title: "エラーが発生しました",
         description: "ログアウトに失敗しました",
