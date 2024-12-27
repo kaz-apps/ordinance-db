@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 
 const PaymentPage = () => {
   const [processingPayment, setProcessingPayment] = useState(false);
@@ -34,13 +36,14 @@ const PaymentPage = () => {
     <div className="container max-w-md mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-6">プレミアムプラン登録</h1>
       <div className="space-y-6">
-        <div className="bg-card p-6 rounded-lg shadow">
-          <h2 className="text-xl font-semibold mb-4">お支払い情報</h2>
-          <div className="space-y-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>お支払い情報</CardTitle>
+            <CardDescription>安全な決済処理を行います</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
             <div>
-              <label htmlFor="cardNumber" className="block text-sm font-medium mb-1">
-                カード番号
-              </label>
+              <Label htmlFor="cardNumber">カード番号</Label>
               <Input
                 id="cardNumber"
                 placeholder="4242 4242 4242 4242"
@@ -49,9 +52,7 @@ const PaymentPage = () => {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label htmlFor="expiry" className="block text-sm font-medium mb-1">
-                  有効期限
-                </label>
+                <Label htmlFor="expiry">有効期限</Label>
                 <Input
                   id="expiry"
                   placeholder="MM/YY"
@@ -59,9 +60,7 @@ const PaymentPage = () => {
                 />
               </div>
               <div>
-                <label htmlFor="cvc" className="block text-sm font-medium mb-1">
-                  セキュリティコード
-                </label>
+                <Label htmlFor="cvc">セキュリティコード</Label>
                 <Input
                   id="cvc"
                   placeholder="123"
@@ -69,18 +68,20 @@ const PaymentPage = () => {
                 />
               </div>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
         
-        <div className="bg-muted p-4 rounded-lg">
-          <div className="flex justify-between items-center mb-2">
-            <span>プレミアムプラン（月額）</span>
-            <span className="font-semibold">¥15,000</span>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            ※これはテスト用の決済画面です。実際の決済は行われません。
-          </p>
-        </div>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex justify-between items-center mb-2">
+              <span>プレミアムプラン（月額）</span>
+              <span className="font-semibold">¥15,000</span>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              ※これはテスト用の決済画面です。実際の決済は行われません。
+            </p>
+          </CardContent>
+        </Card>
 
         <div className="flex gap-4">
           <Button
