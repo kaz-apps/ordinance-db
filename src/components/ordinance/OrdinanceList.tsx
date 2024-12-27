@@ -7,6 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Ordinance } from '../../types/ordinance';
 import { OrdinanceTableHeader } from './OrdinanceTableHeader';
 import { OrdinanceTableRow } from './OrdinanceTableRow';
+import { useAuth } from '@supabase/auth-helpers-react';
 
 interface OrdinanceListProps {
   ordinances: Ordinance[];
@@ -21,6 +22,9 @@ export const OrdinanceList: React.FC<OrdinanceListProps> = ({
   applicabilityStatus,
   onSort,
 }) => {
+  const session = useAuth();
+  const isAuthenticated = !!session;
+
   // グループごとに条例をまとめる
   const groupedOrdinances = ordinances.reduce((acc, ordinance) => {
     const group = ordinance.groupName;
@@ -37,20 +41,22 @@ export const OrdinanceList: React.FC<OrdinanceListProps> = ({
         <Table>
           <OrdinanceTableHeader onSort={onSort} />
           <TableBody>
-            {Object.entries(groupedOrdinances).map(([groupName, groupOrdinances]) => (
+            {Object.entries(groupedOrdinances).map(([groupName, groupOrdinances], groupIndex) => (
               <React.Fragment key={groupName}>
                 <OrdinanceTableRow
                   ordinance={groupOrdinances[0]}
                   onApplicabilityChange={onApplicabilityChange}
                   applicabilityStatus={applicabilityStatus}
                   isGroupHeader={true}
+                  isBlurred={!isAuthenticated && groupIndex > 0}
                 />
-                {groupOrdinances.map((ordinance) => (
+                {groupOrdinances.map((ordinance, index) => (
                   <OrdinanceTableRow
                     key={ordinance.id}
                     ordinance={ordinance}
                     onApplicabilityChange={onApplicabilityChange}
                     applicabilityStatus={applicabilityStatus}
+                    isBlurred={!isAuthenticated && (groupIndex > 0 || index > 0)}
                   />
                 ))}
               </React.Fragment>

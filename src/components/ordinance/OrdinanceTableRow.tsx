@@ -4,12 +4,14 @@ import { Ordinance } from '../../types/ordinance';
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { XCircle, Layers } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface OrdinanceTableRowProps {
   ordinance: Ordinance;
   onApplicabilityChange: (id: string, status: 'not-applicable' | null) => void;
   applicabilityStatus: Record<string, 'not-applicable' | null>;
   isGroupHeader?: boolean;
+  isBlurred?: boolean;
 }
 
 export const OrdinanceTableRow: React.FC<OrdinanceTableRowProps> = ({
@@ -17,13 +19,17 @@ export const OrdinanceTableRow: React.FC<OrdinanceTableRowProps> = ({
   onApplicabilityChange,
   applicabilityStatus,
   isGroupHeader = false,
+  isBlurred = false,
 }) => {
   if (isGroupHeader) {
     return (
       <TableRow>
         <TableCell
           colSpan={10}
-          className="bg-gray-700 text-white font-medium py-2 px-4"
+          className={cn(
+            "bg-gray-700 text-white font-medium py-2 px-4",
+            isBlurred && "blur-sm pointer-events-none"
+          )}
         >
           <div className="flex items-center space-x-2">
             <Layers className="h-4 w-4" />
@@ -35,7 +41,7 @@ export const OrdinanceTableRow: React.FC<OrdinanceTableRowProps> = ({
   }
 
   return (
-    <TableRow>
+    <TableRow className={cn(isBlurred && "blur-sm pointer-events-none")}>
       <TableCell>
         <div className="flex items-center space-x-2">
           <Checkbox
