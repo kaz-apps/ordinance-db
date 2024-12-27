@@ -19,11 +19,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { DragDropContext, Droppable, Draggable } from '@dnd-kit/core';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
 import {
   SortableContext,
   verticalListSortingStrategy,
   useSortable,
+  arrayMove,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
@@ -46,6 +54,11 @@ const OrdinanceTable = ({ ordinances }: OrdinanceTableProps) => {
   const [sortConfig, setSortConfig] = useState<SortConfig>(null);
   const [items, setItems] = useState(ordinances);
 
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor)
+  );
+
   // 建築用途の一覧を取得
   const buildingTypes = useMemo(() => {
     return Array.from(new Set(ordinances.map(ord => ord.buildingType)));
@@ -67,6 +80,11 @@ const OrdinanceTable = ({ ordinances }: OrdinanceTableProps) => {
       )
     );
   }, [ordinances, selectedPrefecture]);
+
+  const handlePrefectureChange = (value: string) => {
+    setSelectedPrefecture(value);
+    setSelectedCity(''); // Reset city selection when prefecture changes
+  };
 
   // フィルタリングされた条例一覧
   const filteredOrdinances = useMemo(() => {
@@ -117,12 +135,29 @@ const OrdinanceTable = ({ ordinances }: OrdinanceTableProps) => {
       const oldIndex = items.findIndex(item => item.id === active.id);
       const newIndex = items.findIndex(item => item.id === over.id);
       
-      const newItems = [...items];
-      const [removed] = newItems.splice(oldIndex, 1);
-      newItems.splice(newIndex, 0, removed);
-      
-      setItems(newItems);
+      setItems(arrayMove(items, oldIndex, newIndex));
     }
+  };
+
+  const SortableRow = ({ ordinance, children }) => {
+    const {
+      attributes,
+      listeners,
+      setNodeRef,
+      transform,
+      transition,
+    } = useSortable({ id: ordinance.id });
+
+    const style = {
+      transform: CSS.Transform.toString(transform),
+      transition,
+    };
+
+    return (
+      <TableRow ref={setNodeRef} style={style} {...attributes} {...listeners}>
+        {children}
+      </TableRow>
+    );
   };
 
   const exportToCSV = () => {
@@ -244,7 +279,11 @@ const OrdinanceTable = ({ ordinances }: OrdinanceTableProps) => {
 
       <div className="border rounded-lg">
         <ScrollArea className="h-[600px]">
-          <DragDropContext onDragEnd={handleDragEnd}>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
             <Table>
               <TableHeader className="sticky top-0 bg-background">
                 <TableRow>
@@ -273,36 +312,25 @@ const OrdinanceTable = ({ ordinances }: OrdinanceTableProps) => {
                   </TableHead>
                 </TableRow>
               </TableHeader>
-              <Droppable droppableId="table">
-                {(provided) => (
-                  <TableBody {...provided.droppableProps} ref={provided.innerRef}>
-                    {filteredOrdinances.map((ordinance, index) => (
-                      <Draggable key={ordinance.id} draggableId={ordinance.id} index={index}>
-                        {(provided) => (
-                          <TableRow
-                            ref={provided.innerRef}
-                            {...provided.draggableProps}
-                            {...provided.dragHandleProps}
-                          >
-                            <TableCell>{ordinance.prefecture}</TableCell>
-                            <TableCell>{ordinance.city}</TableCell>
-                            <TableCell>{ordinance.category}</TableCell>
-                            <TableCell>{ordinance.subCategory}</TableCell>
-                            <TableCell>{ordinance.title}</TableCell>
-                            <TableCell>{ordinance.description}</TableCell>
-                            <TableCell>{ordinance.requirements}</TableCell>
-                            <TableCell>{ordinance.buildingType}</TableCell>
-                            <TableCell>{ordinance.buildingSize.floors}</TableCell>
-                          </TableRow>
-                        )}
-                      </Draggable>
-                    ))}
-                    {provided.placeholder}
-                  </TableBody>
-                )}
-              </Droppable>
+              <TableBody>
+                <SortableContext items={filteredOrdinances} strategy={verticalListSortingStrategy}>
+                  {filteredOrdinances.map((ordinance) => (
+                    <SortableRow key={ordinance.id} ordinance={ordinance}>
+                      <TableCell>{ordinance.prefecture}</TableCell>
+                      <TableCell>{ordinance.city}</TableCell>
+                      <TableCell>{ordinance.category}</TableCell>
+                      <TableCell>{ordinance.subCategory}</TableCell>
+                      <TableCell>{ordinance.title}</TableCell>
+                      <TableCell>{ordinance.description}</TableCell>
+                      <TableCell>{ordinance.requirements}</TableCell>
+                      <TableCell>{ordinance.buildingType}</TableCell>
+                      <TableCell>{ordinance.buildingSize.floors}</TableCell>
+                    </SortableRow>
+                  ))}
+                </SortableContext>
+              </TableBody>
             </Table>
-          </DragDropContext>
+          </DndContext>
         </ScrollArea>
       </div>
     </div>
