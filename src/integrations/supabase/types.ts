@@ -9,19 +9,73 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      ordinances: {
+        Row: {
+          building_type: string
+          category: string
+          city: string
+          created_at: string | null
+          description: string
+          floors: number
+          group_name: string
+          height: number
+          id: string
+          prefecture: string
+          requirements: string
+          sub_category: string | null
+          title: string
+          total_area: number
+        }
+        Insert: {
+          building_type: string
+          category: string
+          city: string
+          created_at?: string | null
+          description: string
+          floors: number
+          group_name: string
+          height: number
+          id?: string
+          prefecture: string
+          requirements: string
+          sub_category?: string | null
+          title: string
+          total_area: number
+        }
+        Update: {
+          building_type?: string
+          category?: string
+          city?: string
+          created_at?: string | null
+          description?: string
+          floors?: number
+          group_name?: string
+          height?: number
+          id?: string
+          prefecture?: string
+          requirements?: string
+          sub_category?: string | null
+          title?: string
+          total_area?: number
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string | null
+          full_name: string | null
           id: string
           username: string | null
         }
         Insert: {
           created_at?: string | null
+          full_name?: string | null
           id: string
           username?: string | null
         }
         Update: {
           created_at?: string | null
+          full_name?: string | null
           id?: string
           username?: string | null
         }
