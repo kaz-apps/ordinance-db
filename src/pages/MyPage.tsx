@@ -4,6 +4,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Database } from "@/integrations/supabase/types";
 import { ProfileCard } from "@/components/profile/ProfileCard";
 import { SubscriptionCard } from "@/components/subscription/SubscriptionCard";
+import { useNavigate } from "react-router-dom";
 
 type SubscriptionPlan = Database["public"]["Enums"]["subscription_plan"];
 
@@ -26,24 +27,35 @@ const MyPage = () => {
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
+    checkUser();
     fetchProfileAndSubscription();
   }, []);
 
+  const checkUser = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      navigate("/login");
+      return;
+    }
+  };
+
   const fetchProfileAndSubscription = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession();
       
-      if (!user) {
+      if (!session) {
         setLoading(false);
+        navigate("/login");
         return;
       }
 
       const { data: profileData, error: profileError } = await supabase
         .from("profiles")
         .select("*")
-        .eq("id", user.id)
+        .eq("id", session.user.id)
         .maybeSingle();
 
       if (profileError) throw profileError;
@@ -52,16 +64,16 @@ const MyPage = () => {
       const { data: subscriptionData, error: subscriptionError } = await supabase
         .from("subscriptions")
         .select("*")
-        .eq("user_id", user.id)
+        .eq("user_id", session.user.id)
         .maybeSingle();
 
       if (subscriptionError) throw subscriptionError;
       setSubscription(subscriptionData);
 
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "エラーが発生しました",
-        description: "データの取得に失敗しました",
+        description: error.message,
         variant: "destructive",
       });
     } finally {
@@ -71,15 +83,18 @@ const MyPage = () => {
 
   const handlePlanChange = async (newPlan: SubscriptionPlan) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        navigate("/login");
+        return;
+      }
 
       if (!subscription) {
         const { data, error } = await supabase
           .from("subscriptions")
           .insert([
             { 
-              user_id: user.id,
+              user_id: session.user.id,
               plan: newPlan,
               current_period_start: new Date().toISOString(),
               current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
@@ -110,10 +125,10 @@ const MyPage = () => {
         title: "プラン変更完了",
         description: `${newPlan === "premium" ? "プレミアム" : "無料"}プランに変更されました`,
       });
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "エラーが発生しました",
-        description: "プラン変更に失敗しました",
+        description: error.message,
         variant: "destructive",
       });
     }
