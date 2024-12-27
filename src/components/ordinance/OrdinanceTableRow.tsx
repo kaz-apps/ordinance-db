@@ -18,36 +18,43 @@ export const OrdinanceTableRow: React.FC<OrdinanceTableRowProps> = ({
   applicabilityStatus,
   isGroupHeader = false,
 }) => {
+  if (isGroupHeader) {
+    return (
+      <TableRow>
+        <TableCell
+          colSpan={10}
+          className="bg-gray-700 text-white font-medium py-2 px-4"
+        >
+          <div className="flex items-center space-x-2">
+            <Layers className="h-4 w-4" />
+            <span>{ordinance.groupName}</span>
+          </div>
+        </TableCell>
+      </TableRow>
+    );
+  }
+
   return (
-    <TableRow className={isGroupHeader ? "bg-muted/30" : ""}>
+    <TableRow>
       <TableCell>
         <div className="flex items-center space-x-2">
-          {isGroupHeader ? (
-            <div className="flex items-center space-x-2 text-muted-foreground">
-              <Layers className="h-4 w-4" />
-              <span className="font-medium">{ordinance.groupName}</span>
-            </div>
-          ) : (
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id={`not-applicable-${ordinance.id}`}
-                checked={applicabilityStatus[ordinance.id] === 'not-applicable'}
-                onCheckedChange={(checked) => {
-                  onApplicabilityChange(
-                    ordinance.id,
-                    checked ? 'not-applicable' : null
-                  );
-                }}
-              />
-              <Label 
-                htmlFor={`not-applicable-${ordinance.id}`}
-                className="flex items-center space-x-1 cursor-pointer text-sm"
-              >
-                <XCircle className="h-4 w-4 text-red-500" />
-                <span>非該当</span>
-              </Label>
-            </div>
-          )}
+          <Checkbox
+            id={`not-applicable-${ordinance.id}`}
+            checked={applicabilityStatus[ordinance.id] === 'not-applicable'}
+            onCheckedChange={(checked) => {
+              onApplicabilityChange(
+                ordinance.id,
+                checked ? 'not-applicable' : null
+              );
+            }}
+          />
+          <Label 
+            htmlFor={`not-applicable-${ordinance.id}`}
+            className="flex items-center space-x-1 cursor-pointer text-sm"
+          >
+            <XCircle className="h-4 w-4 text-red-500" />
+            <span>非該当</span>
+          </Label>
         </div>
       </TableCell>
       <TableCell>{ordinance.prefecture}</TableCell>
