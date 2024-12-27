@@ -11,28 +11,23 @@ const Index = () => {
 
   const handleLogout = async () => {
     try {
-      const session = await supabase.auth.getSession();
-      if (!session.data.session) {
-        // If no session exists, just navigate to login
-        navigate('/login');
-        return;
-      }
-
-      const { error } = await supabase.auth.signOut({
-        scope: 'local' // Use local scope instead of global
-      });
+      const { error } = await supabase.auth.signOut();
       
-      if (error && error.message !== "Session not found") {
-        console.error('Logout error:', error);
-        toast({
-          variant: "destructive",
-          title: "ログアウトエラー",
-          description: "ログアウトに失敗しました。再度お試しください。",
-        });
+      if (error) {
+        // Only show error toast if it's not a session_not_found error
+        if (error.message !== "Session not found") {
+          console.error('Logout error:', error);
+          toast({
+            variant: "destructive",
+            title: "ログアウトエラー",
+            description: "ログアウトに失敗しました。再度お試しください。",
+          });
+        }
       }
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
+      // Always navigate to login page, regardless of errors
       navigate('/login');
     }
   };
