@@ -46,7 +46,7 @@ const OrdinanceTable = ({ ordinances }: OrdinanceTableProps) => {
   const [maxFloors, setMaxFloors] = useState<string>('');
   const [sortConfig, setSortConfig] = useState<SortConfig>(null);
   const [items, setItems] = useState(ordinances);
-  const [applicabilityStatus, setApplicabilityStatus] = useState<Record<string, 'applicable' | 'not-applicable' | null>>({});
+  const [applicabilityStatus, setApplicabilityStatus] = useState<Record<string, 'not-applicable' | null>>({});
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -127,7 +127,7 @@ const OrdinanceTable = ({ ordinances }: OrdinanceTableProps) => {
     }
   };
 
-  const handleApplicabilityChange = (id: string, status: 'applicable' | 'not-applicable' | null) => {
+  const handleApplicabilityChange = (id: string, status: 'not-applicable' | null) => {
     setApplicabilityStatus(prev => ({
       ...prev,
       [id]: status
@@ -171,7 +171,7 @@ const OrdinanceTable = ({ ordinances }: OrdinanceTableProps) => {
         ordinance.buildingSize.floors,
         ordinance.buildingSize.height,
         ordinance.buildingSize.totalArea,
-        applicabilityStatus[ordinance.id] || '未選択'
+        applicabilityStatus[ordinance.id] === 'not-applicable' ? '非該当' : '該当'
       ]);
       
       const csvContent = [
