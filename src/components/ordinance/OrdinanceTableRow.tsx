@@ -20,7 +20,7 @@ export const OrdinanceTableRow: React.FC<OrdinanceTableRowProps> = ({
     <>
       <TableCell>
         <RadioGroup
-          value={applicabilityStatus[ordinance.id] || ''}
+          value={applicabilityStatus[ordinance.id] || null}
           onValueChange={(value) => 
             onApplicabilityChange(
               ordinance.id, 
