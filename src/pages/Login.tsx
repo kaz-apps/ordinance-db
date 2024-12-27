@@ -3,6 +3,7 @@ import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { MainNav } from "@/components/navigation/MainNav";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -28,34 +29,37 @@ const Login = () => {
   }, [navigate]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            アカウントにログイン
-          </h2>
-        </div>
-        <div className="mt-8">
-          <Auth
-            supabaseClient={supabase}
-            appearance={{ theme: ThemeSupa }}
-            theme="light"
-            providers={[]}
-            localization={{
-              variables: {
-                sign_in: {
-                  email_label: "メールアドレス",
-                  password_label: "パスワード",
-                  button_label: "ログイン",
+    <div>
+      <MainNav />
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-md w-full space-y-8">
+          <div>
+            <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+              アカウントにログイン
+            </h2>
+          </div>
+          <div className="mt-8">
+            <Auth
+              supabaseClient={supabase}
+              appearance={{ theme: ThemeSupa }}
+              theme="light"
+              providers={[]}
+              localization={{
+                variables: {
+                  sign_in: {
+                    email_label: "メールアドレス",
+                    password_label: "パスワード",
+                    button_label: "ログイン",
+                  },
+                  sign_up: {
+                    email_label: "メールアドレス",
+                    password_label: "パスワード",
+                    button_label: "アカウント作成",
+                  },
                 },
-                sign_up: {
-                  email_label: "メールアドレス",
-                  password_label: "パスワード",
-                  button_label: "アカウント作成",
-                },
-              },
-            }}
-          />
+              }}
+            />
+          </div>
         </div>
       </div>
     </div>

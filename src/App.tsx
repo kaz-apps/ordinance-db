@@ -6,6 +6,7 @@ import Signup from "@/pages/Signup";
 import MyPage from "@/pages/MyPage";
 import PaymentPage from "@/pages/PaymentPage";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { MainNav } from "@/components/navigation/MainNav";
 
 // Create a client
 const queryClient = new QueryClient();
