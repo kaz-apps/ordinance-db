@@ -101,7 +101,7 @@ export const MainNav = () => {
               </Link>
             </NavigationMenuItem>
             <NavigationMenuItem>
-              <Link to="/login" className={navigationMenuTriggerStyle()}>
+              <Link to="/signup" className={navigationMenuTriggerStyle()}>
                 <UserPlus className="mr-2 h-4 w-4" />
                 会員登録
               </Link>
