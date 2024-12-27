@@ -8,6 +8,8 @@ import { Ordinance } from '../../types/ordinance';
 import { OrdinanceTableHeader } from './OrdinanceTableHeader';
 import { OrdinanceTableRow } from './OrdinanceTableRow';
 import { useSession } from '@supabase/auth-helpers-react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 interface OrdinanceListProps {
   ordinances: Ordinance[];
@@ -24,6 +26,23 @@ export const OrdinanceList: React.FC<OrdinanceListProps> = ({
 }) => {
   const session = useSession();
   const isAuthenticated = !!session;
+
+  // Fetch user's subscription status
+  const { data: subscription } = useQuery({
+    queryKey: ['subscription', session?.user?.id],
+    queryFn: async () => {
+      if (!session?.user?.id) return null;
+      const { data } = await supabase
+        .from('subscriptions')
+        .select('*')
+        .eq('user_id', session.user.id)
+        .single();
+      return data;
+    },
+    enabled: !!session?.user?.id,
+  });
+
+  const isPremiumUser = subscription?.plan === 'premium';
 
   // グループごとに条例をまとめる
   const groupedOrdinances = ordinances.reduce((acc, ordinance) => {
@@ -42,7 +61,7 @@ export const OrdinanceList: React.FC<OrdinanceListProps> = ({
           <OrdinanceTableHeader onSort={onSort} />
           <TableBody>
             {Object.entries(groupedOrdinances).map(([groupName, groupOrdinances], groupIndex) => {
-              // For unauthenticated users, only show the first group's first row clearly
+              // For unauthenticated users, only show the first row clearly
               const shouldBlurGroup = !isAuthenticated && groupIndex > 0;
               
               return (
@@ -55,9 +74,11 @@ export const OrdinanceList: React.FC<OrdinanceListProps> = ({
                     isBlurred={shouldBlurGroup}
                   />
                   {groupOrdinances.map((ordinance, index) => {
-                    // For unauthenticated users, blur all rows except the first row of the first group
-                    const shouldBlurRow = !isAuthenticated && (groupIndex > 0 || index > 0);
-                    
+                    // Determine if the row should be blurred based on authentication and subscription status
+                    const shouldBlurRow = !isAuthenticated ? 
+                      (groupIndex > 0 || index > 0) : // Not authenticated: blur all except first row
+                      (!isPremiumUser && ordinance.category !== '調査'); // Free user: blur non-survey categories
+
                     return (
                       <OrdinanceTableRow
                         key={ordinance.id}
