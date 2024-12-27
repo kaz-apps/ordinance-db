@@ -5,6 +5,7 @@ import { Database } from "@/integrations/supabase/types";
 import { ProfileCard } from "@/components/profile/ProfileCard";
 import { SubscriptionCard } from "@/components/subscription/SubscriptionCard";
 import { useNavigate } from "react-router-dom";
+import { MainNav } from "@/components/navigation/MainNav";
 
 type SubscriptionPlan = Database["public"]["Enums"]["subscription_plan"];
 
@@ -139,12 +140,15 @@ const MyPage = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-8">
-      <ProfileCard profile={profile} />
-      <SubscriptionCard
-        subscription={subscription}
-        onPlanChange={handlePlanChange}
-      />
+    <div>
+      <MainNav />
+      <div className="container mx-auto px-4 py-8 space-y-8">
+        <ProfileCard profile={profile} />
+        <SubscriptionCard
+          subscription={subscription}
+          onPlanChange={handlePlanChange}
+        />
+      </div>
     </div>
   );
 };
