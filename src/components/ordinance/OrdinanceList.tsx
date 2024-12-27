@@ -27,23 +27,28 @@ export const OrdinanceList: React.FC<OrdinanceListProps> = ({
   const session = useSession();
   const isAuthenticated = !!session;
 
-  // Fetch user's subscription status
+  // サブスクリプション状態の取得を改善
   const { data: subscription } = useQuery({
     queryKey: ['subscription', session?.user?.id],
     queryFn: async () => {
       if (!session?.user?.id) return null;
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('subscriptions')
         .select('*')
         .eq('user_id', session.user.id)
         .single();
+      
+      if (error) {
+        console.error('Subscription fetch error:', error);
+        return null;
+      }
       return data;
     },
     enabled: !!session?.user?.id,
   });
 
   const isPremiumUser = subscription?.plan === 'premium';
-  console.log('Is Premium User:', isPremiumUser, 'Subscription:', subscription); // デバッグ用を強化
+  console.log('Is Premium User:', isPremiumUser, 'Subscription:', subscription); // デバッグログを詳細化
 
   // グループごとに条例をまとめる
   const groupedOrdinances = ordinances.reduce((acc, ordinance) => {
@@ -88,7 +93,7 @@ export const OrdinanceList: React.FC<OrdinanceListProps> = ({
                       shouldBlurRow,
                       groupIndex,
                       index
-                    }); // デバッグ情報を強化
+                    });
 
                     return (
                       <OrdinanceTableRow
