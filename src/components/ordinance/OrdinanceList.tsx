@@ -21,19 +21,39 @@ export const OrdinanceList: React.FC<OrdinanceListProps> = ({
   applicabilityStatus,
   onSort,
 }) => {
+  // グループごとに条例をまとめる
+  const groupedOrdinances = ordinances.reduce((acc, ordinance) => {
+    const group = ordinance.groupName;
+    if (!acc[group]) {
+      acc[group] = [];
+    }
+    acc[group].push(ordinance);
+    return acc;
+  }, {} as Record<string, Ordinance[]>);
+
   return (
     <div className="border rounded-lg">
       <ScrollArea className="h-[600px]">
         <Table>
           <OrdinanceTableHeader onSort={onSort} />
           <TableBody>
-            {ordinances.map((ordinance) => (
-              <OrdinanceTableRow
-                key={ordinance.id}
-                ordinance={ordinance}
-                onApplicabilityChange={onApplicabilityChange}
-                applicabilityStatus={applicabilityStatus}
-              />
+            {Object.entries(groupedOrdinances).map(([groupName, groupOrdinances]) => (
+              <React.Fragment key={groupName}>
+                <OrdinanceTableRow
+                  ordinance={groupOrdinances[0]}
+                  onApplicabilityChange={onApplicabilityChange}
+                  applicabilityStatus={applicabilityStatus}
+                  isGroupHeader={true}
+                />
+                {groupOrdinances.map((ordinance) => (
+                  <OrdinanceTableRow
+                    key={ordinance.id}
+                    ordinance={ordinance}
+                    onApplicabilityChange={onApplicabilityChange}
+                    applicabilityStatus={applicabilityStatus}
+                  />
+                ))}
+              </React.Fragment>
             ))}
           </TableBody>
         </Table>
