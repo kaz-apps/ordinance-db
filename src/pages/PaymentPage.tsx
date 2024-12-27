@@ -5,26 +5,73 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
 
 const PaymentPage = () => {
   const [processingPayment, setProcessingPayment] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const handlePayment = async () => {
     setProcessingPayment(true);
-    await new Promise(resolve => setTimeout(resolve, 2000));
     
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        throw new Error("ログインが必要です");
+      }
+
+      // Update or create subscription record
+      const { data: existingSubscription } = await supabase
+        .from('subscriptions')
+        .select('*')
+        .eq('user_id', session.user.id)
+        .single();
+
+      if (existingSubscription) {
+        // Update existing subscription
+        const { error } = await supabase
+          .from('subscriptions')
+          .update({
+            plan: 'premium',
+            current_period_start: new Date().toISOString(),
+            current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+          })
+          .eq('id', existingSubscription.id);
+
+        if (error) throw error;
+      } else {
+        // Create new subscription
+        const { error } = await supabase
+          .from('subscriptions')
+          .insert([
+            {
+              user_id: session.user.id,
+              plan: 'premium',
+              current_period_start: new Date().toISOString(),
+              current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+            }
+          ]);
+
+        if (error) throw error;
+      }
+
+      // Invalidate queries to refresh subscription data
+      queryClient.invalidateQueries({ queryKey: ['subscription'] });
+
       toast({
         title: "決済完了",
         description: "プレミアムプランへの登録が完了しました",
       });
       navigate("/mypage");
     } catch (error) {
+      console.error('Payment error:', error);
       toast({
         title: "エラーが発生しました",
-        description: "決済処理に失敗しました",
+        description: error.message || "決済処理に失敗しました",
         variant: "destructive",
       });
     } finally {
