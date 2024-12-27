@@ -61,8 +61,11 @@ export const OrdinanceList: React.FC<OrdinanceListProps> = ({
           <OrdinanceTableHeader onSort={onSort} />
           <TableBody>
             {Object.entries(groupedOrdinances).map(([groupName, groupOrdinances], groupIndex) => {
-              // For unauthenticated users, only show the first row clearly
+              // 未認証ユーザーの場合、最初の行以外をぼかす
               const shouldBlurGroup = !isAuthenticated && groupIndex > 0;
+              
+              // グループ内の最初の行が調査カテゴリかどうかを確認
+              const isSurveyCategory = groupOrdinances[0].category === '調査';
               
               return (
                 <React.Fragment key={groupName}>
@@ -71,13 +74,13 @@ export const OrdinanceList: React.FC<OrdinanceListProps> = ({
                     onApplicabilityChange={onApplicabilityChange}
                     applicabilityStatus={applicabilityStatus}
                     isGroupHeader={true}
-                    isBlurred={shouldBlurGroup}
+                    isBlurred={shouldBlurGroup && (!isAuthenticated || (!isPremiumUser && !isSurveyCategory))}
                   />
                   {groupOrdinances.map((ordinance, index) => {
-                    // Determine if the row should be blurred based on authentication and subscription status
+                    // ぼかし処理の条件を更新
                     const shouldBlurRow = !isAuthenticated ? 
-                      (groupIndex > 0 || index > 0) : // Not authenticated: blur all except first row
-                      (!isPremiumUser && ordinance.category !== '調査'); // Free user: blur non-survey categories
+                      (groupIndex > 0 || index > 0) : // 未認証: 最初の行以外をぼかす
+                      (!isPremiumUser && ordinance.category !== '調査'); // 無料ユーザー: 調査カテゴリ以外をぼかす
 
                     return (
                       <OrdinanceTableRow
