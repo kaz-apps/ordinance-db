@@ -7,7 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Ordinance } from '../../types/ordinance';
 import { OrdinanceTableHeader } from './OrdinanceTableHeader';
 import { OrdinanceTableRow } from './OrdinanceTableRow';
-import { useAuth } from '@supabase/auth-helpers-react';
+import { useSession } from '@supabase/auth-helpers-react';
 
 interface OrdinanceListProps {
   ordinances: Ordinance[];
@@ -22,7 +22,7 @@ export const OrdinanceList: React.FC<OrdinanceListProps> = ({
   applicabilityStatus,
   onSort,
 }) => {
-  const session = useAuth();
+  const session = useSession();
   const isAuthenticated = !!session;
 
   // グループごとに条例をまとめる
