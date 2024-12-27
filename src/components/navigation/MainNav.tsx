@@ -2,10 +2,27 @@ import { NavigationMenu, NavigationMenuItem, NavigationMenuLink, NavigationMenuL
 import { navigationMenuTriggerStyle } from "@/components/ui/navigation-menu";
 import { Link } from "react-router-dom";
 import { Home, User, UserPlus, LogIn } from "lucide-react";
-import { useSession } from '@supabase/auth-helpers-react';
+import { useEffect, useState } from 'react';
+import { supabase } from "@/integrations/supabase/client";
 
 export const MainNav = () => {
-  const session = useSession();
+  const [session, setSession] = useState(null);
+
+  useEffect(() => {
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   return (
     <NavigationMenu className="max-w-none w-full justify-between px-6 py-3 border-b">
