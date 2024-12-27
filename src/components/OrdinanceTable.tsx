@@ -121,6 +121,7 @@ const OrdinanceTable = ({ ordinances }: OrdinanceTableProps) => {
         ordinances={filteredOrdinances}
         onApplicabilityChange={handleApplicabilityChange}
         applicabilityStatus={applicabilityStatus}
+        onSort={handleSort}
       />
     </div>
   );
