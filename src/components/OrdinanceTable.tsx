@@ -113,7 +113,7 @@ const OrdinanceTable = ({ ordinances }: OrdinanceTableProps) => {
               <SelectValue placeholder="都道府県を選択" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">すべての都道府県</SelectItem>
+              <SelectItem value="_all">すべての都道府県</SelectItem>
               {prefectures.map(prefecture => (
                 <SelectItem key={prefecture} value={prefecture}>
                   {prefecture}
@@ -127,7 +127,7 @@ const OrdinanceTable = ({ ordinances }: OrdinanceTableProps) => {
               <SelectValue placeholder="市区町村を選択" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">すべての市区町村</SelectItem>
+              <SelectItem value="_all">すべての市区町村</SelectItem>
               {cities.map(city => (
                 <SelectItem key={city} value={city}>
                   {city}
