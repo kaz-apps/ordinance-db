@@ -4,7 +4,6 @@ import { useToast } from "@/hooks/use-toast";
 import { Database } from "@/integrations/supabase/types";
 import { ProfileCard } from "@/components/profile/ProfileCard";
 import { SubscriptionCard } from "@/components/subscription/SubscriptionCard";
-import { PaymentModal } from "@/components/payment/PaymentModal";
 
 type SubscriptionPlan = Database["public"]["Enums"]["subscription_plan"];
 
@@ -25,8 +24,6 @@ const MyPage = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [loading, setLoading] = useState(true);
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [processingPayment, setProcessingPayment] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -121,28 +118,6 @@ const MyPage = () => {
     }
   };
 
-  const handleMockPayment = async () => {
-    setProcessingPayment(true);
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    try {
-      await handlePlanChange("premium");
-      setShowPaymentModal(false);
-      toast({
-        title: "決済完了",
-        description: "プレミアムプランへの登録が完了しました",
-      });
-    } catch (error) {
-      toast({
-        title: "エラーが発生しました",
-        description: "決済処理に失敗しました",
-        variant: "destructive",
-      });
-    } finally {
-      setProcessingPayment(false);
-    }
-  };
-
   if (loading) {
     return <div className="flex justify-center items-center min-h-screen">読み込み中...</div>;
   }
@@ -153,13 +128,6 @@ const MyPage = () => {
       <SubscriptionCard
         subscription={subscription}
         onPlanChange={handlePlanChange}
-        onShowPaymentModal={() => setShowPaymentModal(true)}
-      />
-      <PaymentModal
-        open={showPaymentModal}
-        onOpenChange={setShowPaymentModal}
-        onPayment={handleMockPayment}
-        processingPayment={processingPayment}
       />
     </div>
   );

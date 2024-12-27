@@ -1,6 +1,7 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Database } from "@/integrations/supabase/types";
+import { useNavigate } from "react-router-dom";
 
 type SubscriptionPlan = Database["public"]["Enums"]["subscription_plan"];
 
@@ -11,58 +12,83 @@ type Subscription = {
   current_period_end: string | null;
 };
 
-interface SubscriptionCardProps {
+type SubscriptionCardProps = {
   subscription: Subscription | null;
   onPlanChange: (plan: SubscriptionPlan) => void;
-  onShowPaymentModal: () => void;
-}
+};
 
 export const SubscriptionCard = ({
   subscription,
   onPlanChange,
-  onShowPaymentModal,
 }: SubscriptionCardProps) => {
-  const handlePlanChange = (newPlan: SubscriptionPlan) => {
-    if (newPlan === "premium") {
-      onShowPaymentModal();
-      return;
-    }
-    onPlanChange(newPlan);
+  const navigate = useNavigate();
+  const currentPlan = subscription?.plan || "free";
+
+  const handleUpgrade = () => {
+    navigate("/payment");
+  };
+
+  const handleDowngrade = () => {
+    onPlanChange("free");
   };
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>サブスクリプション</CardTitle>
+        <CardDescription>
+          現在のプラン：{currentPlan === "premium" ? "プレミアム" : "無料"}
+        </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="space-y-6">
-          <div>
-            <h3 className="text-sm font-medium">現在のプラン</h3>
-            <p className="mt-1">{subscription?.plan === "premium" ? "プレミアムプラン" : "無料プラン"}</p>
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>無料プラン</CardTitle>
+                <CardDescription>¥0/月</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ul className="list-disc list-inside space-y-2 mb-4">
+                  <li>基本機能の利用</li>
+                  <li>広告表示あり</li>
+                </ul>
+                {currentPlan === "premium" && (
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={handleDowngrade}
+                  >
+                    ダウングレード
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle>プレミアムプラン</CardTitle>
+                <CardDescription>¥15,000/月</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ul className="list-disc list-inside space-y-2 mb-4">
+                  <li>全機能の利用</li>
+                  <li>広告表示なし</li>
+                  <li>優先サポート</li>
+                </ul>
+                {currentPlan === "free" && (
+                  <Button className="w-full" onClick={handleUpgrade}>
+                    アップグレード
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
           </div>
           {subscription?.current_period_end && (
-            <div>
-              <h3 className="text-sm font-medium">次回更新日</h3>
-              <p className="mt-1">{new Date(subscription.current_period_end).toLocaleDateString("ja-JP")}</p>
-            </div>
+            <p className="text-sm text-muted-foreground">
+              次回更新日：
+              {new Date(subscription.current_period_end).toLocaleDateString("ja-JP")}
+            </p>
           )}
-          <div className="flex gap-4">
-            <Button
-              variant={subscription?.plan === "free" ? "secondary" : "outline"}
-              onClick={() => handlePlanChange("free")}
-              disabled={subscription?.plan === "free"}
-            >
-              無料プラン
-            </Button>
-            <Button
-              variant={subscription?.plan === "premium" ? "secondary" : "default"}
-              onClick={() => handlePlanChange("premium")}
-              disabled={subscription?.plan === "premium"}
-            >
-              プレミアムプラン（¥15,000/月）
-            </Button>
-          </div>
         </div>
       </CardContent>
     </Card>
