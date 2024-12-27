@@ -43,7 +43,7 @@ export const OrdinanceList: React.FC<OrdinanceListProps> = ({
   });
 
   const isPremiumUser = subscription?.plan === 'premium';
-  console.log('Is Premium User:', isPremiumUser); // デバッグ用
+  console.log('Is Premium User:', isPremiumUser, 'Subscription:', subscription); // デバッグ用を強化
 
   // グループごとに条例をまとめる
   const groupedOrdinances = ordinances.reduce((acc, ordinance) => {
@@ -62,8 +62,8 @@ export const OrdinanceList: React.FC<OrdinanceListProps> = ({
           <OrdinanceTableHeader onSort={onSort} />
           <TableBody>
             {Object.entries(groupedOrdinances).map(([groupName, groupOrdinances], groupIndex) => {
-              // 未認証ユーザーの場合、最初の行以外をぼかす
-              const shouldBlurGroup = !isAuthenticated && groupIndex > 0;
+              // プレミアムユーザーの場合は常にぼかしなし
+              const shouldBlurGroup = isPremiumUser ? false : !isAuthenticated && groupIndex > 0;
               
               return (
                 <React.Fragment key={groupName}>
@@ -75,17 +75,20 @@ export const OrdinanceList: React.FC<OrdinanceListProps> = ({
                     isBlurred={shouldBlurGroup}
                   />
                   {groupOrdinances.map((ordinance, index) => {
-                    // ぼかし処理の条件を更新
-                    const shouldBlurRow = isPremiumUser ? false : // プレミアムユーザー: 常にぼかしなし
+                    // プレミアムユーザーの場合は常にぼかしなし
+                    const shouldBlurRow = isPremiumUser ? false : 
                       !isAuthenticated ? (groupIndex > 0 || index > 0) : // 未認証: 最初の行以外をぼかす
                       (ordinance.category !== '調査'); // 無料ユーザー: 調査カテゴリ以外をぼかす
 
                     console.log('Row blur status:', {
                       isPremiumUser,
+                      subscription,
                       isAuthenticated,
                       category: ordinance.category,
-                      shouldBlurRow
-                    }); // デバッグ用
+                      shouldBlurRow,
+                      groupIndex,
+                      index
+                    }); // デバッグ情報を強化
 
                     return (
                       <OrdinanceTableRow
