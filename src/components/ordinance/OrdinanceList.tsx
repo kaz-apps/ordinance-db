@@ -41,26 +41,36 @@ export const OrdinanceList: React.FC<OrdinanceListProps> = ({
         <Table>
           <OrdinanceTableHeader onSort={onSort} />
           <TableBody>
-            {Object.entries(groupedOrdinances).map(([groupName, groupOrdinances], groupIndex) => (
-              <React.Fragment key={groupName}>
-                <OrdinanceTableRow
-                  ordinance={groupOrdinances[0]}
-                  onApplicabilityChange={onApplicabilityChange}
-                  applicabilityStatus={applicabilityStatus}
-                  isGroupHeader={true}
-                  isBlurred={!isAuthenticated && groupIndex > 0}
-                />
-                {groupOrdinances.map((ordinance, index) => (
+            {Object.entries(groupedOrdinances).map(([groupName, groupOrdinances], groupIndex) => {
+              // For unauthenticated users, only show the first group's first row clearly
+              const shouldBlurGroup = !isAuthenticated && groupIndex > 0;
+              
+              return (
+                <React.Fragment key={groupName}>
                   <OrdinanceTableRow
-                    key={ordinance.id}
-                    ordinance={ordinance}
+                    ordinance={groupOrdinances[0]}
                     onApplicabilityChange={onApplicabilityChange}
                     applicabilityStatus={applicabilityStatus}
-                    isBlurred={!isAuthenticated && (groupIndex > 0 || index > 0)}
+                    isGroupHeader={true}
+                    isBlurred={shouldBlurGroup}
                   />
-                ))}
-              </React.Fragment>
-            ))}
+                  {groupOrdinances.map((ordinance, index) => {
+                    // For unauthenticated users, blur all rows except the first row of the first group
+                    const shouldBlurRow = !isAuthenticated && (groupIndex > 0 || index > 0);
+                    
+                    return (
+                      <OrdinanceTableRow
+                        key={ordinance.id}
+                        ordinance={ordinance}
+                        onApplicabilityChange={onApplicabilityChange}
+                        applicabilityStatus={applicabilityStatus}
+                        isBlurred={shouldBlurRow}
+                      />
+                    );
+                  })}
+                </React.Fragment>
+              );
+            })}
           </TableBody>
         </Table>
       </ScrollArea>
