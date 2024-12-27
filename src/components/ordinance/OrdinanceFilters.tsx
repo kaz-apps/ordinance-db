@@ -20,17 +20,10 @@ interface OrdinanceFiltersProps {
 export const OrdinanceFilters: React.FC<OrdinanceFiltersProps> = ({
   selectedPrefecture,
   selectedCity,
-  selectedBuildingType,
-  minFloors,
-  maxFloors,
   prefectures,
   cities,
-  buildingTypes,
   onPrefectureChange,
   onCityChange,
-  onBuildingTypeChange,
-  onMinFloorsChange,
-  onMaxFloorsChange,
 }) => {
   return (
     <div className="flex flex-wrap gap-4">
@@ -61,39 +54,6 @@ export const OrdinanceFilters: React.FC<OrdinanceFiltersProps> = ({
           ))}
         </SelectContent>
       </Select>
-
-      <Select value={selectedBuildingType} onValueChange={onBuildingTypeChange}>
-        <SelectTrigger className="w-[180px]">
-          <SelectValue placeholder="建築用途を選択" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="_all">すべての用途</SelectItem>
-          {buildingTypes.map(type => (
-            <SelectItem key={type} value={type}>
-              {type}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-
-      <div className="flex items-center gap-2">
-        <input
-          type="number"
-          placeholder="最小階数"
-          value={minFloors}
-          onChange={(e) => onMinFloorsChange(e.target.value)}
-          className="w-24 px-3 py-2 border rounded"
-        />
-        <span>～</span>
-        <input
-          type="number"
-          placeholder="最大階数"
-          value={maxFloors}
-          onChange={(e) => onMaxFloorsChange(e.target.value)}
-          className="w-24 px-3 py-2 border rounded"
-        />
-        <span>階</span>
-      </div>
     </div>
   );
 };
