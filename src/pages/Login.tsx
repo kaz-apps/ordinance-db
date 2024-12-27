@@ -40,6 +40,7 @@ const Login = () => {
             supabaseClient={supabase}
             appearance={{ theme: ThemeSupa }}
             theme="light"
+            providers={[]}
             localization={{
               variables: {
                 sign_in: {
