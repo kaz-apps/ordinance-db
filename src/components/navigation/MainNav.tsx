@@ -1,7 +1,7 @@
 import { NavigationMenu, NavigationMenuItem, NavigationMenuLink, NavigationMenuList } from "@/components/ui/navigation-menu";
 import { navigationMenuTriggerStyle } from "@/components/ui/navigation-menu";
 import { Link } from "react-router-dom";
-import { Home, User, UserPlus } from "lucide-react";
+import { Home, User, UserPlus, LogIn } from "lucide-react";
 import { useSession } from '@supabase/auth-helpers-react';
 
 export const MainNav = () => {
@@ -24,12 +24,20 @@ export const MainNav = () => {
             </Link>
           </NavigationMenuItem>
         ) : (
-          <NavigationMenuItem>
-            <Link to="/login" className={navigationMenuTriggerStyle()}>
-              <UserPlus className="mr-2 h-4 w-4" />
-              会員登録
-            </Link>
-          </NavigationMenuItem>
+          <>
+            <NavigationMenuItem>
+              <Link to="/login" className={navigationMenuTriggerStyle()}>
+                <LogIn className="mr-2 h-4 w-4" />
+                ログイン
+              </Link>
+            </NavigationMenuItem>
+            <NavigationMenuItem>
+              <Link to="/login" className={navigationMenuTriggerStyle()}>
+                <UserPlus className="mr-2 h-4 w-4" />
+                会員登録
+              </Link>
+            </NavigationMenuItem>
+          </>
         )}
       </NavigationMenuList>
     </NavigationMenu>
